@@ -15,5 +15,5 @@ class Example {
 }
 
 
-Example().test() // prints OOO
+Example().test() // prints 1
 Example().someName() // prints OOO

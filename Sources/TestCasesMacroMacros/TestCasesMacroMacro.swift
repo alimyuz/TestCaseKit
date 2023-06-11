@@ -35,15 +35,18 @@ public struct TestCaseMacro: PeerMacro {
             ExprSyntax("self.\(raw: funcIdentifier)(\(raw: arguments))")
         }
         
+        // Construct function itself
         let newFuncHeader = PartialSyntaxNodeString(stringLiteral: "func \(funcIdentifier)()")
         let items = expressions.map { CodeBlockItemSyntax(item: .expr($0)) }
         let newFuncDecl = try FunctionDeclSyntax(newFuncHeader) {
             CodeBlockItemListSyntax(items)
         }
         
+        // Convert
         return [newFuncDecl.as(DeclSyntax.self)!]
     }
     
+    // Finds @testCase attributes from all attributes of a function
     private static func testCaseAttributes(
         for function: FunctionDeclSyntax
     ) -> [AttributeListSyntax.Element] {
@@ -57,6 +60,8 @@ public struct TestCaseMacro: PeerMacro {
         } ?? []
     }
     
+    // Converts @testCase attribute to argument list for calling a function
+    // E.g. @testCase("a", 2, 0.5) -> "a", 2, 0.5
     private static func argumentCallList(
         for attribute: AttributeListSyntax.Element
     ) -> String {
@@ -73,11 +78,13 @@ public struct TestCaseMacro: PeerMacro {
         }
     }
     
+    // Converts tuple expression to argument list for calling a function
+    // E.g. ("a", 2, 0.5) -> "a", 2, 0.5
     private static func argumentCallList(
         from argumentList: TupleExprElementListSyntax
     ) -> String {
-        return argumentList.map { expression in
-            return expression.tokens(viewMode: .sourceAccurate)
+        argumentList.map { expression in
+            expression.tokens(viewMode: .sourceAccurate)
                 .reduce("") { $0 + $1.text }
         }.joined(separator: " ")
     }

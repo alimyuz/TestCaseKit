@@ -4,11 +4,6 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 
-public enum TestCaseMacroError: Error {
-    
-    case notSupported
-}
-
 public struct TestCaseMacro: PeerMacro {
     
     private static var alreadyExpandedForFunctions = Set<SyntaxIdentifier>()
@@ -29,8 +24,8 @@ public struct TestCaseMacro: PeerMacro {
         self.alreadyExpandedForFunctions.insert(funcDecl.id)
         
         // Construct expressions from all @testCase attributes
-        let expressions = self.testCaseAttributes(for: funcDecl).map { attribute in
-            self.argumentCallList(for: attribute)
+        let expressions = try self.testCaseAttributes(for: funcDecl).map { attribute in
+            try self.argumentCallList(of: attribute, for: funcDecl)
         }.map { arguments in
             ExprSyntax("self.\(raw: funcIdentifier)(\(raw: arguments))")
         }
@@ -63,13 +58,21 @@ public struct TestCaseMacro: PeerMacro {
     // Converts @testCase attribute to argument list for calling a function
     // E.g. @testCase("a", 2, 0.5) -> "a", 2, 0.5
     private static func argumentCallList(
-        for attribute: AttributeListSyntax.Element
-    ) -> String {
+        of attribute: AttributeListSyntax.Element,
+        for function: FunctionDeclSyntax
+    ) throws -> TupleExprElementListSyntax {
         switch attribute {
         case .attribute(let attribute):
             switch attribute.argument {
             case .argumentList(let list):
-                return self.argumentCallList(from: list)
+                let expectedParametersCount = function.signature.input.parameterList.count
+                if list.count > expectedParametersCount {
+                    throw TestCaseMacroError.tooManyArguments(expected: expectedParametersCount, actual: list.count)
+                } else if list.count < expectedParametersCount {
+                    throw TestCaseMacroError.tooLittleArguments(expected: expectedParametersCount, actual: list.count)
+                } else {
+                    return list
+                }
             default:
                 fatalError(attribute.debugDescription) // Idk when this happens
             }

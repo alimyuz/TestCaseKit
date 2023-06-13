@@ -153,4 +153,54 @@ final class TestCasesMacroTests: XCTestCase {
             macros: testMacros
         )
     }
+    
+    func testAssertDiagnosticTooManyArguments() {
+        assertMacroExpansion(
+            """
+            class Example {
+                @testCase("One", 4, 5, 6)
+                func test(_ param: String, _ param2: Int, _ param3: Int) {
+                    print(param)
+                }
+            }
+            """,
+            expandedSource:
+            """
+            class Example {
+                func test(_ param: String, _ param2: Int, _ param3: Int) {
+                    print(param)
+                }
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "Too many arguments. Expected: 3, provided: 4", line: 2, column: 5)
+            ],
+            macros: testMacros
+        )
+    }
+    
+    func testAssertDiagnosticTooLittleArguments() {
+        assertMacroExpansion(
+            """
+            class Example {
+                @testCase("One")
+                func test(_ param: String, _ param2: Int, _ param3: Int) {
+                    print(param)
+                }
+            }
+            """,
+            expandedSource:
+            """
+            class Example {
+                func test(_ param: String, _ param2: Int, _ param3: Int) {
+                    print(param)
+                }
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "Missing arguments. Expected: 3, provided: 1", line: 2, column: 5)
+            ],
+            macros: testMacros
+        )
+    }
 }

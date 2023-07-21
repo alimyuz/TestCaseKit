@@ -23,7 +23,7 @@ final class TestCasesMacroTests: XCTestCase {
                 func test(_ param: Int) {
                     print(param)
                 }
-                func test() {
+                func test_case1() {
                     self.test(987)
                 }
             }
@@ -47,7 +47,7 @@ final class TestCasesMacroTests: XCTestCase {
                 func test(_ param: String) {
                     print(param)
                 }
-                func test() {
+                func test_case1() {
                     self.test("PPQQ")
                 }
             }
@@ -71,7 +71,7 @@ final class TestCasesMacroTests: XCTestCase {
                 func test(_ param: Double) {
                     print(param)
                 }
-                func test() {
+                func test_case1() {
                     self.test(2.521)
                 }
             }
@@ -95,7 +95,7 @@ final class TestCasesMacroTests: XCTestCase {
                 func test(_ param: Int, _ param2: Int, _ param3: Int) {
                     print(param)
                 }
-                func test() {
+                func test_case1() {
                     self.test(3, 4, 5)
                 }
             }
@@ -119,7 +119,7 @@ final class TestCasesMacroTests: XCTestCase {
                 func test(_ param: String, _ param2: Int, _ param3: Int) {
                     print(param)
                 }
-                func test() {
+                func test_case1() {
                     self.test("One", 4, 5)
                 }
             }
@@ -144,8 +144,10 @@ final class TestCasesMacroTests: XCTestCase {
                 func test(_ param: String, _ param2: Int, _ param3: Int) {
                     print(param)
                 }
-                func test() {
+                func test_case1() {
                     self.test("One", 4, 5)
+                }
+                func test_case2() {
                     self.test("Two", 6, 7)
                 }
             }

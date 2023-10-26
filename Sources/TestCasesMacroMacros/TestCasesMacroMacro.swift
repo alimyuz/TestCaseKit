@@ -57,7 +57,7 @@ public struct TestCaseMacro: PeerMacro {
                 return list
             }
         default:
-            fatalError(attribute.debugDescription) // Should not happen
+            throw "Not an argument list. \(attribute.debugDescription)" // Should not happen
         }
     }
 }

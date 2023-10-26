@@ -15,8 +15,6 @@ jobs:
     runs-on: [macos-latest]
 
     steps:
-    - name: Use latest Swift
-    - uses: swift-actions/setup-swift@v1
     - uses: swift-actions/setup-swift@v1
     - name: Get swift version
       run: swift --version

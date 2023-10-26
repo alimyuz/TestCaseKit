@@ -5,6 +5,7 @@ import SwiftSyntaxMacros
 import OSLog
 
 extension String : Error { }
+
 public struct TestCaseMacro: PeerMacro {
     
     public static func expansion<Context, Declaration>(

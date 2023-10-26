@@ -1,4 +1,4 @@
-import TestCasesMacro
+import TestCaseKit
 
 
 class Example {

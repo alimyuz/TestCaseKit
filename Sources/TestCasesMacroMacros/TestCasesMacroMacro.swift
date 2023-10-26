@@ -2,8 +2,9 @@ import SwiftCompilerPlugin
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
+import OSLog
 
-
+extension String : Error { }
 public struct TestCaseMacro: PeerMacro {
     
     public static func expansion<Context, Declaration>(
@@ -14,22 +15,22 @@ public struct TestCaseMacro: PeerMacro {
         guard let funcDecl = declaration.as(FunctionDeclSyntax.self) else {
             throw TestCaseMacroError.notSupported
         }
+        
+        // Index value is unavailable in the API,
+        // so we retreieve it from node location in source file.
+        // Update when/if it becomes publicly available.
+        let nodeLocation = context.location(of: node)?.line.as(IntegerLiteralExprSyntax.self)?.literal.text ?? "0"
+        let funcDeclLocation = context.location(of: funcDecl)?.line.as(IntegerLiteralExprSyntax.self)?.literal.text ?? "0"
+        let testIndex = (Int(nodeLocation) ?? 0) - (Int(funcDeclLocation) ?? 0) + 1
+        
         // Retrieve argument list in the given attribute
         let arguments = try self.argumentCallList(of: node, for: funcDecl)
         
-        // Index value is unavailable in the API,
-        // so we retreieve it directly from the memory.
-        // Update when/if it becomes publicly available.
-        var nodeIndex = node.index
-        let testIndex = withUnsafeBytes(of: &nodeIndex) { bytes in
-            bytes[4]
-        } + 1
-        
         // Construct new test function
-        let funcIdentifier = funcDecl.identifier.text
+        let funcIdentifier = funcDecl.name.text
         
         // Construct function body
-        let newFuncHeader = PartialSyntaxNodeString(
+        let newFuncHeader = SyntaxNodeString(
             stringLiteral: "func \(funcIdentifier)_case\(testIndex)()")
         let newFuncDecl = try FunctionDeclSyntax(newFuncHeader) {
             ExprSyntax("self.\(raw: funcIdentifier)(\(raw: arguments))")
@@ -44,10 +45,10 @@ public struct TestCaseMacro: PeerMacro {
     private static func argumentCallList(
         of attribute: AttributeSyntax,
         for function: FunctionDeclSyntax
-    ) throws -> TupleExprElementListSyntax {
-        switch attribute.argument {
+    ) throws -> LabeledExprListSyntax {
+        switch attribute.arguments {
         case .argumentList(let list):
-            let expectedParametersCount = function.signature.input.parameterList.count
+            let expectedParametersCount = function.signature.parameterClause.parameters.count
             if list.count > expectedParametersCount {
                 throw TestCaseMacroError.tooManyArguments(expected: expectedParametersCount, actual: list.count)
             } else if list.count < expectedParametersCount {
